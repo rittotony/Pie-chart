@@ -1,3 +1,5 @@
+var div = d3.select("body").append("div").attr("class", "toolTip");
+
 // Define SVG attributes
 var width = 400,
   height = 400,
@@ -5,14 +7,6 @@ var width = 400,
 
 // Use predefined D3 palette
 var colors = d3.scale.category20c();
-
-// Create tooltip
-var tooltip = d3.select("#graphic")
-  .append("div")
-  .attr("class", "tooltip")
-  .style("position", "absolute")
-  .style("z-index", "999") // Updated z-index value
-  .style("visibility", "hidden");
 
 // Create test data
 var pie = [
@@ -75,35 +69,28 @@ var slices = d3
     return colors(i);
   })
   .attr("d", arc)
-  .on("mouseover", function (d) {
-    // Show tooltip on mouseover
-    tooltip
-      .style("visibility", "visible")
-      .text(d.data.label + " (" + d.data.value + ")");
+  .on("mousemove", function (d) {
+    div.style("left", d3.event.pageX + 10 + "px");
+    div.style("top", d3.event.pageY - 25 + "px");
+    div.style("display", "inline-block");
+    div.html(d.data.label + "<br>" + d.data.value);
   })
-  .on("mousemove", function () {
-    // Position tooltip relative to mouse cursor
-    tooltip
-      .style("top", d3.event.pageY - 10 + "px")
-      .style("left", d3.event.pageX + 10 + "px");
-  })
-  .on("mouseout", function () {
-    // Hide tooltip on mouseout
-    tooltip.style("visibility", "hidden");
+  .on("mouseout", function (d) {
+    div.style("display", "none");
   });
 
 // Add the slice labels
 var text = d3
   .selectAll("g.slice")
   .append("text")
-  .text(function (d, i) {
+  .text(function (d) {
     return d.data.label + " (" + d.data.value + ")";
   })
   .attr("font-size", "12")
   .attr("text-anchor", "middle")
   .attr("fill", "black")
   .attr("transform", function (d) {
-    // Move the lable to the center of its slice
+    // Move the label to the center of its slice
     d.innerRadius = 0;
     d.outerRadius = radius;
     return "translate(" + arc.centroid(d) + ")";
